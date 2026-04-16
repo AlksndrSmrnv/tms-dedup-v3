@@ -1,0 +1,17 @@
+description = "Only run Stage 2b: classify ambiguous sections with the LLM"
+
+prompt = """
+Run only the section-classification phase. Steps:
+
+1. If `artifacts/02a_sections_ambiguous.json` is missing, run
+   `uv run tms-dedup parse` (if needed) and `uv run tms-dedup classify-auto`.
+2. Read `artifacts/02a_sections_ambiguous.json`. If `count == 0`, print a
+   note and stop.
+3. Apply `prompts/classify_section.md` to every ambiguous entry. Write the
+   merged output to `artifacts/02b_llm_classified.json` in the schema
+   documented in that prompt.
+4. Run `uv run tms-dedup classify-merge --force`.
+5. Print a count of sections per final category.
+
+{{args}}
+"""
