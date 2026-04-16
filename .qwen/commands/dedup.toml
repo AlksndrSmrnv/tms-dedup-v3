@@ -1,0 +1,31 @@
+description = "Find semantic duplicate tests in data/input.tsv and write report/duplicates_report.md"
+
+prompt = """
+Follow the pipeline described in QWEN.md end-to-end. Concretely:
+
+1. Verify `data/input.tsv` exists; if not, tell the user and stop.
+2. If `.venv/` is missing, run `uv sync`.
+3. Run `uv run tms-dedup parse`.
+4. Run `uv run tms-dedup classify-auto`.
+5. Read `artifacts/02a_sections_ambiguous.json`. If `count > 0`, follow
+   `prompts/classify_section.md` to classify every ambiguous section, then
+   write the result to `artifacts/02b_llm_classified.json`. If `count == 0`,
+   skip this step.
+6. Run `uv run tms-dedup classify-merge`.
+7. Run `uv run tms-dedup features`.
+8. Run `uv run tms-dedup candidates`.
+9. Run `uv run tms-dedup batch-pairs`. Read
+   `artifacts/batches/_progress.json`.
+10. For every batch in the progress file whose `verdict_file` does not yet
+    exist on disk, read the batch JSON, apply `prompts/arbitrate_pair.md`,
+    and write the JSONL verdicts to the exact `verdict_file` path. Process
+    batches in ascending `batch_id` order. Never overwrite an existing
+    verdict file.
+11. Run `uv run tms-dedup merge-verdicts`.
+12. Run `uv run tms-dedup cluster`.
+13. Run `uv run tms-dedup report`.
+14. Print a short summary: number of duplicate groups, largest group size,
+    count of uncertain pairs, and a link to `report/duplicates_report.md`.
+
+{{args}}
+"""

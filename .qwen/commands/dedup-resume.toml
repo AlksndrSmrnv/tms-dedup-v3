@@ -1,0 +1,26 @@
+description = "Resume an interrupted /dedup run from the last completed artifact"
+
+prompt = """
+Resume the tms-dedup-v3 pipeline without wiping artifacts. Steps:
+
+1. If `artifacts/01_tests.json` is missing, run `uv run tms-dedup parse`.
+2. If `artifacts/02a_sections_ambiguous.json` is missing, run
+   `uv run tms-dedup classify-auto`.
+3. If `artifacts/02a_sections_ambiguous.json` has `count > 0` and
+   `artifacts/02b_llm_classified.json` is missing, produce it by following
+   `prompts/classify_section.md`.
+4. If `artifacts/02b_sections_final.json` is missing, run
+   `uv run tms-dedup classify-merge`.
+5. Run `uv run tms-dedup features` and `uv run tms-dedup candidates`; they
+   short-circuit if cached.
+6. If `artifacts/batches/_progress.json` is missing, run
+   `uv run tms-dedup batch-pairs`. Otherwise keep existing batches.
+7. Inspect the progress manifest. For every batch whose `verdict_file` is
+   not yet on disk, produce it using `prompts/arbitrate_pair.md`. Never
+   overwrite an existing verdict file.
+8. Run `uv run tms-dedup merge-verdicts`, `uv run tms-dedup cluster`,
+   `uv run tms-dedup report`.
+9. Print a short summary as in `/dedup`.
+
+{{args}}
+"""
